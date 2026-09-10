@@ -6,28 +6,42 @@
   <title>Biofeedback Health Monitor</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .heart-pulse {
+      display: inline-block;
+      transition: transform 0.15s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+    }
+    .pulsing {
+      transform: scale(1.35);
+    }
+  </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen p-4 md:p-8 font-sans">
 
   <header class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center pb-6 border-b border-slate-800 gap-4">
     <div>
-      <h1 class="text-3xl font-extrabold text-indigo-400 tracking-wide">BIOFEEDBACK MONITOR</h1>
+      <h1 class="text-3xl font-extrabold text-indigo-400 tracking-wide flex items-center gap-2">
+        BIOFEEDBACK MONITOR
+      </h1>
       <p class="text-xs text-slate-400 mt-1">SISTEMA DE MÚLTIPLES MÉTRICAS EN TIEMPO REAL</p>
     </div>
     
-    <div class="flex items-center gap-3 bg-slate-900 px-4 py-2 rounded-xl border border-slate-800">
+    <div class="flex items-center gap-3 bg-slate-900 px-4 py-2 rounded-xl border border-slate-800 shadow-md">
       <span id="lblEstado" class="text-xs text-slate-400">Bluetooth: Desconectado</span>
-      <button id="btnConectar" onclick="conectarBluetooth()" class="bg-indigo-600 hover:bg-indigo-500 text-xs font-bold px-4 py-2 rounded-lg transition">Conectar "visor"</button>
+      <button id="btnConectar" onclick="conectarBluetooth()" class="bg-indigo-600 hover:bg-indigo-500 text-xs font-bold px-4 py-2 rounded-lg transition shadow-lg shadow-indigo-600/30">Conectar "visor"</button>
     </div>
   </header>
 
   <main class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
     
-    <!-- TARJETA BPM -->
-    <div class="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 shadow-lg">
-      <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Ritmo Cardíaco</span>
+    <!-- TARJETA BPM CON CORAZÓN ANIMADO -->
+    <div class="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 shadow-lg relative overflow-hidden">
+      <div class="flex justify-between items-center">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Ritmo Cardíaco</span>
+        <span id="corazon" class="heart-pulse text-2xl">❤️</span>
+      </div>
       <div class="flex items-baseline gap-2 mt-2">
-        <span id="valBpm" class="text-5xl font-black text-rose-500">--</span>
+        <span id="valBpm" class="text-5xl font-black text-rose-500 transition-colors">--</span>
         <span class="text-sm font-medium text-slate-400">BPM</span>
       </div>
       <p class="text-xs text-slate-500 mt-3">Estado actual de frecuencia en reposo o actividad.</p>
@@ -65,7 +79,10 @@
 
     <!-- GRÁFICO ECG / ONDA PPG EN VIVO -->
     <div class="md:col-span-4 bg-slate-900/80 p-6 rounded-2xl border border-slate-800 shadow-lg">
-      <h2 class="text-sm font-semibold text-slate-400 mb-4 uppercase tracking-wider">Señal Infrarroja PPG en Tiempo Real</h2>
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Señal Infrarroja PPG en Tiempo Real</h2>
+        <span id="liveBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-500">OFFLINE</span>
+      </div>
       <div class="h-64">
         <canvas id="ppgChart"></canvas>
       </div>
@@ -108,6 +125,7 @@
     async function conectarBluetooth() {
       const lblEstado = document.getElementById('lblEstado');
       const btnConectar = document.getElementById('btnConectar');
+      const liveBadge = document.getElementById('liveBadge');
 
       if (!("serial" in navigator)) {
         alert("Tu navegador no soporta Web Serial/Bluetooth. Utiliza Google Chrome, MS Edge u Opera.");
@@ -122,7 +140,10 @@
         lblEstado.innerText = "Conectado ✅";
         lblEstado.className = "text-xs text-emerald-400 font-bold";
         btnConectar.innerText = "CONECTADO";
-        btnConectar.className = "bg-emerald-600 text-xs font-bold px-4 py-2 rounded-lg cursor-default";
+        btnConectar.className = "bg-emerald-600 text-xs font-bold px-4 py-2 rounded-lg cursor-default shadow-lg shadow-emerald-600/30";
+        
+        liveBadge.innerText = "EN VIVO";
+        liveBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 animate-pulse";
 
         const textDecoder = new TextDecoderStream();
         const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
@@ -164,32 +185,41 @@
     }
 
     function actualizarMetricas(bpm) {
-      // 1. Mostrar BPM Real
-      document.getElementById('valBpm').innerText = bpm;
+      // 1. Latido del Corazón Animado
+      const corazon = document.getElementById('corazon');
+      corazon.classList.add('pulsing');
+      setTimeout(() => corazon.classList.remove('pulsing'), 150);
 
-      // 2. Estimación de HRV (ms) en base a los intervalos de pulso
+      // 2. Mostrar BPM Real y Alerta Visual por Color
+      const valBpm = document.getElementById('valBpm');
+      valBpm.innerText = bpm;
+      if (bpm > 100) {
+        valBpm.className = "text-5xl font-black text-rose-400 animate-pulse";
+      } else {
+        valBpm.className = "text-5xl font-black text-rose-500";
+      }
+
+      // 3. Estimación de HRV (ms)
       let hrv = Math.round((60000 / bpm) * 0.08 + (Math.random() * 10));
       document.getElementById('valHrv').innerText = hrv;
 
-      // Leyenda dinámica HRV
       const lblHrv = document.getElementById('lblHrv');
       if (hrv > 50) lblHrv.innerText = "Excelente recuperación autonómica.";
       else lblHrv.innerText = "Tensión o fatiga detectada.";
 
-      // 3. Estimación de Perfusión (PI)
+      // 4. Estimación de Perfusión (PI)
       let pi = (1.5 + (Math.random() * 1.2)).toFixed(1);
       document.getElementById('valPi').innerText = pi;
 
-      // 4. Estimación del Estrés (%)
+      // 5. Estimación del Estrés (%)
       let estres = Math.min(100, Math.max(10, Math.round((bpm - 55) * 1.1)));
       document.getElementById('valEstres').innerText = estres;
 
-      // 5. Animación de Onda PPG en el Gráfico
-      simularOndaPPG(bpm);
+      // 6. Animación de Onda PPG en el Gráfico
+      simularOndaPPG();
     }
 
-    function simularOndaPPG(bpm) {
-      // Crea un pico de pulso simétrico en la gráfica para representar la onda
+    function simularOndaPPG() {
       const valoresOnda = [200, 350, 850, 950, 500, 300, 220, 200];
       let i = 0;
       
