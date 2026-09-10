@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CardioMonitor IoT</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card: #151c2c;
+      --red: #ff2a5f;
+      --text: #ffffff;
+      --muted: #8b9bb4;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 90vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 350px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      margin: 0;
+    }
+
+    .subtitle {
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 1.5px;
+      margin-top: 5px;
+      margin-bottom: 25px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 24px;
+      padding: 35px 20px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      margin-bottom: 25px;
+    }
+
+    .heart {
+      font-size: 70px;
+      display: inline-block;
+      margin-bottom: 10px;
+      transition: transform 0.15s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+    }
+
+    .bpm {
+      font-size: 4.5rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+      margin: 10px 0;
+    }
+
+    .unit {
+      font-size: 0.9rem;
+      color: var(--red);
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 18px;
+      border: none;
+      border-radius: 16px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--red);
+      color: white;
+      box-shadow: 0 4px 15px rgba(255, 42, 95, 0.4);
+      transition: transform 0.1s, background-color 0.2s;
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .status-text {
+      margin-top: 15px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1>CardioMonitor IoT</h1>
+      <p class="subtitle">SISTEMA BIOMÉTRICO EN TIEMPO REAL</p>
+    </div>
+
+    <div class="card">
+      <div class="heart" id="corazon">❤️</div>
+      <div class="bpm" id="pulsaciones">--</div>
+      <div class="unit">BPM / PULSO</div>
+    </div>
+
+    <button class="btn" id="btnConectar" onclick="conectarBluetooth()">
+      CONECTAR "VISOR"
+    </button>
+
+    <div id="estado" class="status-text">Bluetooth: Desconectado</div>
+  </div>
+
+  <script>
+    let port;
+    let reader;
+
+    async function conectarBluetooth() {
+      const estado = document.getElementById('estado');
+      const btn = document.getElementById('btnConectar');
+
+      if (!("serial" in navigator)) {
+        alert("Tu navegador no soporta Web Serial. Por favor usa Google Chrome, MS Edge u Opera.");
+        return;
+      }
+
+      try {
+        estado.innerText = "Buscando dispositivo...";
+        
+        port = await navigator.serial.requestPort();
+        await port.open({ baudRate: 9600 });
+
+        estado.innerText = "Bluetooth: Conectado a visor ✅";
+        estado.style.color = "#00e676";
+        btn.innerText = "DISPOSITIVO CONECTADO";
+        btn.style.background = "#2e7d32";
+
+        const textDecoder = new TextDecoderStream();
+        const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
+        reader = textDecoder.readable.getReader();
+
+        leerDatos();
+
+      } catch (error) {
+        console.error(error);
+        estado.innerText = "Error o conexión cancelada";
+        estado.style.color = "#ff2a5f";
+      }
+    }
+
+    async function leerDatos() {
+      let acumulador = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) {
+          reader.releaseLock();
+          break;
+        }
+        
+        if (value) {
+          acumulador += value;
+          if (acumulador.includes("\n")) {
+            let lineas = acumulador.split("\n");
+            let ultimoDato = lineas[lineas.length - 2].trim(); 
+            acumulador = lineas[lineas.length - 1]; 
+
+            let bpm = parseInt(ultimoDato);
+            if (!isNaN(bpm) && bpm >= 30 && bpm <= 200) {
+              actualizarPantalla(bpm);
+            }
+          }
+        }
+      }
+    }
+
+    function actualizarPantalla(valor) {
+      document.getElementById('pulsaciones').innerText = valor;
+      
+      const corazon = document.getElementById('corazon');
+      corazon.style.transform = 'scale(1.35)';
+      setTimeout(() => { 
+        corazon.style.transform = 'scale(1)'; 
+      }, 150);
+    }
+  </script>
+</body>
+</html>
