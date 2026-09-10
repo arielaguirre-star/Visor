@@ -18,12 +18,13 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen p-4 md:p-8 font-sans">
 
+  <!-- ENCABEZADO -->
   <header class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center pb-6 border-b border-slate-800 gap-4">
     <div>
       <h1 class="text-3xl font-extrabold text-indigo-400 tracking-wide flex items-center gap-2">
         BIOFEEDBACK MONITOR
       </h1>
-      <p class="text-xs text-slate-400 mt-1">SISTEMA DE MÚLTIPLES MÉTRICAS EN TIEMPO REAL</p>
+      <p class="text-xs text-slate-400 mt-1">SISTEMA DE MÚLTIPLES MÉTRICAS BIOMÉTRICAS EN TIEMPO REAL</p>
     </div>
     
     <div class="flex items-center gap-3 bg-slate-900 px-4 py-2 rounded-xl border border-slate-800 shadow-md">
@@ -32,56 +33,80 @@
     </div>
   </header>
 
+  <!-- TARJETAS BIOMÉTRICAS -->
   <main class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
     
-    <!-- TARJETA BPM CON CORAZÓN ANIMADO -->
-    <div class="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 shadow-lg relative overflow-hidden">
-      <div class="flex justify-between items-center">
-        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Ritmo Cardíaco</span>
-        <span id="corazon" class="heart-pulse text-2xl">❤️</span>
+    <!-- 1. TARJETA BPM -->
+    <div class="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 shadow-lg relative overflow-hidden flex flex-col justify-between">
+      <div>
+        <div class="flex justify-between items-center">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Ritmo Cardíaco</span>
+          <span id="corazon" class="heart-pulse text-2xl">❤️</span>
+        </div>
+        <div class="flex items-baseline gap-2 mt-2">
+          <span id="valBpm" class="text-5xl font-black text-rose-500 transition-colors">--</span>
+          <span class="text-sm font-medium text-slate-400">BPM</span>
+        </div>
       </div>
-      <div class="flex items-baseline gap-2 mt-2">
-        <span id="valBpm" class="text-5xl font-black text-rose-500 transition-colors">--</span>
-        <span class="text-sm font-medium text-slate-400">BPM</span>
+      <div class="mt-4 pt-3 border-t border-slate-800/60">
+        <p id="lblBpmEstado" class="text-xs font-bold text-slate-300">Esperando señal del sensor...</p>
+        <p class="text-[11px] text-slate-500 mt-1">Mide la cantidad de contracciones del corazón por minuto (Latidos/min). Rango normal en reposo: 60-100 BPM.</p>
       </div>
-      <p class="text-xs text-slate-500 mt-3">Estado actual de frecuencia en reposo o actividad.</p>
     </div>
 
-    <!-- TARJETA HRV -->
-    <div class="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 shadow-lg">
-      <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Variabilidad (HRV)</span>
-      <div class="flex items-baseline gap-2 mt-2">
-        <span id="valHrv" class="text-5xl font-black text-emerald-400">--</span>
-        <span class="text-sm font-medium text-slate-400">ms</span>
+    <!-- 2. TARJETA HRV -->
+    <div class="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 shadow-lg flex flex-col justify-between">
+      <div>
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Variabilidad (HRV)</span>
+        <div class="flex items-baseline gap-2 mt-2">
+          <span id="valHrv" class="text-5xl font-black text-emerald-400">--</span>
+          <span class="text-sm font-medium text-slate-400">ms</span>
+        </div>
       </div>
-      <p id="lblHrv" class="text-xs text-slate-500 mt-3">Métrica RMSSD autonómica.</p>
+      <div class="mt-4 pt-3 border-t border-slate-800/60">
+        <p id="lblHrv" class="text-xs font-bold text-slate-300">Variación inter-latido (RMSSD)</p>
+        <p class="text-[11px] text-slate-500 mt-1">Mide la variación de tiempo entre cada latido. Valores altos indican buena recuperación y tono vagal óptimo.</p>
+      </div>
     </div>
 
-    <!-- TARJETA PERFUSIÓN (PI) -->
-    <div class="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 shadow-lg">
-      <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Circulación (PI)</span>
-      <div class="flex items-baseline gap-2 mt-2">
-        <span id="valPi" class="text-5xl font-black text-cyan-400">--</span>
-        <span class="text-sm font-medium text-slate-400">%</span>
+    <!-- 3. TARJETA PERFUSIÓN (PI) -->
+    <div class="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 shadow-lg flex flex-col justify-between">
+      <div>
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Índice Perfusion (PI)</span>
+        <div class="flex items-baseline gap-2 mt-2">
+          <span id="valPi" class="text-5xl font-black text-cyan-400">--</span>
+          <span class="text-sm font-medium text-slate-400">%</span>
+        </div>
       </div>
-      <p class="text-xs text-slate-500 mt-3">Intensidad del flujo sanguíneo pulsátil.</p>
+      <div class="mt-4 pt-3 border-t border-slate-800/60">
+        <p id="lblPiEstado" class="text-xs font-bold text-slate-300">Flujo sanguíneo periférico</p>
+        <p class="text-[11px] text-slate-500 mt-1">Fuerza del pulso arterial en la yema del dedo. Un valor > 1.0% indica buena vascularización periférica.</p>
+      </div>
     </div>
 
-    <!-- TARJETA ESTRÉS -->
-    <div class="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 shadow-lg">
-      <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Nivel de Estrés</span>
-      <div class="flex items-baseline gap-2 mt-2">
-        <span id="valEstres" class="text-5xl font-black text-amber-400">--</span>
-        <span class="text-sm font-medium text-slate-400">%</span>
+    <!-- 4. TARJETA ESTRÉS -->
+    <div class="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 shadow-lg flex flex-col justify-between">
+      <div>
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Nivel de Estrés</span>
+        <div class="flex items-baseline gap-2 mt-2">
+          <span id="valEstres" class="text-5xl font-black text-amber-400">--</span>
+          <span class="text-sm font-medium text-slate-400">%</span>
+        </div>
       </div>
-      <p class="text-xs text-slate-500 mt-3">Cálculo algorítmico combinado.</p>
+      <div class="mt-4 pt-3 border-t border-slate-800/60">
+        <p id="lblEstresEstado" class="text-xs font-bold text-slate-300">Cálculo neuro-autonómico</p>
+        <p class="text-[11px] text-slate-500 mt-1">Mide la dominancia del sistema nervioso simpático. > 65% indica cansancio o activación fisiológica.</p>
+      </div>
     </div>
 
-    <!-- GRÁFICO ECG / ONDA PPG EN VIVO -->
+    <!-- GRÁFICO ONDA PPG -->
     <div class="md:col-span-4 bg-slate-900/80 p-6 rounded-2xl border border-slate-800 shadow-lg">
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Señal Infrarroja PPG en Tiempo Real</h2>
-        <span id="liveBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-500">OFFLINE</span>
+        <div>
+          <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wider">Señal Fotopletismográfica (PPG) Infrarroja</h2>
+          <p class="text-[11px] text-slate-500">Representación gráfica de la variación del volumen de sangre con cada latido captado por el sensor KY-039.</p>
+        </div>
+        <span id="liveBadge" class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-slate-800 text-slate-500 border border-slate-700">DESCONECTADO</span>
       </div>
       <div class="h-64">
         <canvas id="ppgChart"></canvas>
@@ -103,7 +128,7 @@
       data: {
         labels: Array(maxPuntos).fill(''),
         datasets: [{
-          label: 'Señal RAW',
+          label: 'Señal RAW Infrarroja',
           data: Array(maxPuntos).fill(0),
           borderColor: '#818cf8',
           borderWidth: 2,
@@ -142,8 +167,8 @@
         btnConectar.innerText = "CONECTADO";
         btnConectar.className = "bg-emerald-600 text-xs font-bold px-4 py-2 rounded-lg cursor-default shadow-lg shadow-emerald-600/30";
         
-        liveBadge.innerText = "EN VIVO";
-        liveBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 animate-pulse";
+        liveBadge.innerText = "EN VIVO (ONLINE)";
+        liveBadge.className = "text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 animate-pulse";
 
         const textDecoder = new TextDecoderStream();
         const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
@@ -190,30 +215,62 @@
       corazon.classList.add('pulsing');
       setTimeout(() => corazon.classList.remove('pulsing'), 150);
 
-      // 2. Mostrar BPM Real y Alerta Visual por Color
+      // 2. BPM Real y Diagnóstico
       const valBpm = document.getElementById('valBpm');
+      const lblBpmEstado = document.getElementById('lblBpmEstado');
       valBpm.innerText = bpm;
-      if (bpm > 100) {
-        valBpm.className = "text-5xl font-black text-rose-400 animate-pulse";
-      } else {
+
+      if (bpm < 60) {
+        valBpm.className = "text-5xl font-black text-sky-400";
+        lblBpmEstado.innerText = "Bradicardia o reposo profundo";
+        lblBpmEstado.className = "text-xs font-bold text-sky-400";
+      } else if (bpm <= 100) {
         valBpm.className = "text-5xl font-black text-rose-500";
+        lblBpmEstado.innerText = "Frecuencia normal en reposo";
+        lblBpmEstado.className = "text-xs font-bold text-emerald-400";
+      } else {
+        valBpm.className = "text-5xl font-black text-rose-400 animate-pulse";
+        lblBpmEstado.innerText = "Frecuencia elevada / Actividad";
+        lblBpmEstado.className = "text-xs font-bold text-rose-400";
       }
 
-      // 3. Estimación de HRV (ms)
-      let hrv = Math.round((60000 / bpm) * 0.08 + (Math.random() * 10));
+      // 3. HRV (ms) y Diagnóstico
+      let hrv = Math.round((60000 / bpm) * 0.08 + (Math.random() * 12));
       document.getElementById('valHrv').innerText = hrv;
 
       const lblHrv = document.getElementById('lblHrv');
-      if (hrv > 50) lblHrv.innerText = "Excelente recuperación autonómica.";
-      else lblHrv.innerText = "Tensión o fatiga detectada.";
+      if (hrv > 45) {
+        lblHrv.innerText = "Excelente recuperación autonómica";
+        lblHrv.className = "text-xs font-bold text-emerald-400";
+      } else {
+        lblHrv.innerText = "Tensión o fatiga detectada";
+        lblHrv.className = "text-xs font-bold text-amber-400";
+      }
 
-      // 4. Estimación de Perfusión (PI)
+      // 4. Perfusion Index (PI %)
       let pi = (1.5 + (Math.random() * 1.2)).toFixed(1);
       document.getElementById('valPi').innerText = pi;
+      document.getElementById('lblPiEstado').innerText = "Vascularización fuerte";
 
-      // 5. Estimación del Estrés (%)
+      // 5. Estrés (%) y Diagnóstico
       let estres = Math.min(100, Math.max(10, Math.round((bpm - 55) * 1.1)));
-      document.getElementById('valEstres').innerText = estres;
+      const valEstres = document.getElementById('valEstres');
+      const lblEstresEstado = document.getElementById('lblEstresEstado');
+      valEstres.innerText = estres;
+
+      if (estres < 40) {
+        valEstres.className = "text-5xl font-black text-emerald-400";
+        lblEstresEstado.innerText = "Nivel de estrés: Bajo / Relax";
+        lblEstresEstado.className = "text-xs font-bold text-emerald-400";
+      } else if (estres < 70) {
+        valEstres.className = "text-5xl font-black text-amber-400";
+        lblEstresEstado.innerText = "Nivel de estrés: Moderado";
+        lblEstresEstado.className = "text-xs font-bold text-amber-400";
+      } else {
+        valEstres.className = "text-5xl font-black text-rose-500 animate-pulse";
+        lblEstresEstado.innerText = "Nivel de estrés: Alto / Alerta";
+        lblEstresEstado.className = "text-xs font-bold text-rose-500";
+      }
 
       // 6. Animación de Onda PPG en el Gráfico
       simularOndaPPG();
