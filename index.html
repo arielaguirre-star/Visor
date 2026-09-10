@@ -3,14 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CardioMonitor IoT</title>
+  <title>Monitor de Salud - IoT</title>
   <style>
     :root {
       --bg: #090d16;
       --card: #151c2c;
       --red: #ff2a5f;
+      --green: #00e676;
       --text: #ffffff;
       --muted: #8b9bb4;
+    }
+
+    * {
+      box-sizing: border-box;
     }
 
     body {
@@ -22,26 +27,28 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 90vh;
+      min-height: 100vh;
     }
 
     .container {
       width: 100%;
-      max-width: 350px;
+      max-width: 360px;
       text-align: center;
     }
 
     .header h1 {
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       margin: 0;
+      font-weight: 700;
     }
 
     .subtitle {
       font-size: 0.75rem;
       color: var(--muted);
       letter-spacing: 1.5px;
-      margin-top: 5px;
+      margin-top: 6px;
       margin-bottom: 25px;
+      text-transform: uppercase;
     }
 
     .card {
@@ -54,14 +61,14 @@
     }
 
     .heart {
-      font-size: 70px;
+      font-size: 75px;
       display: inline-block;
       margin-bottom: 10px;
       transition: transform 0.15s cubic-bezier(0.17, 0.67, 0.83, 0.67);
     }
 
     .bpm {
-      font-size: 4.5rem;
+      font-size: 4.8rem;
       font-weight: 800;
       color: var(--text);
       line-height: 1;
@@ -104,8 +111,8 @@
 
   <div class="container">
     <div class="header">
-      <h1>CardioMonitor IoT</h1>
-      <p class="subtitle">SISTEMA BIOMÉTRICO EN TIEMPO REAL</p>
+      <h1>Monitor de Salud</h1>
+      <p class="subtitle">SISTEMA BIOMÉTRICO IOT</p>
     </div>
 
     <div class="card">
@@ -115,10 +122,10 @@
     </div>
 
     <button class="btn" id="btnConectar" onclick="conectarBluetooth()">
-      CONECTAR "VISOR"
+      CONECTAR DISPOSITIVO
     </button>
 
-    <div id="estado" class="status-text">Bluetooth: Desconectado</div>
+    <div id="estado" class="status-text">Estado: Desconectado</div>
   </div>
 
   <script>
@@ -129,20 +136,24 @@
       const estado = document.getElementById('estado');
       const btn = document.getElementById('btnConectar');
 
-      if (!("serial" in navigator)) {
-        alert("Tu navegador no soporta Web Serial. Por favor usa Google Chrome, MS Edge u Opera.");
+      // Comprobación de APIs de conexión inalámbrica/serie en navegador
+      if (!("serial" in navigator) && !("bluetooth" in navigator)) {
+        alert("Tu navegador no soporta Web Bluetooth/Serial. Por favor usa Google Chrome, MS Edge u Opera.");
         return;
       }
 
       try {
-        estado.innerText = "Buscando dispositivo...";
+        estado.innerText = "Buscando dispositivo visor...";
         
-        port = await navigator.serial.requestPort();
-        await port.open({ baudRate: 9600 });
+        // 1. Intentar mediante Web Serial / Web Bluetooth Serial API
+        if ("serial" in navigator) {
+          port = await navigator.serial.requestPort();
+          await port.open({ baudRate: 9600 });
+        }
 
-        estado.innerText = "Bluetooth: Conectado a visor ✅";
-        estado.style.color = "#00e676";
-        btn.innerText = "DISPOSITIVO CONECTADO";
+        estado.innerText = "Bluetooth: Conectado ✅";
+        estado.style.color = "var(--green)";
+        btn.innerText = "CONECTADO A VISOR";
         btn.style.background = "#2e7d32";
 
         const textDecoder = new TextDecoderStream();
@@ -153,8 +164,8 @@
 
       } catch (error) {
         console.error(error);
-        estado.innerText = "Error o conexión cancelada";
-        estado.style.color = "#ff2a5f";
+        estado.innerText = "Conexión cancelada o fallida";
+        estado.style.color = "var(--red)";
       }
     }
 
@@ -170,6 +181,7 @@
         
         if (value) {
           acumulador += value;
+          // Cuando llega el salto de línea enviado por miBT.println(bpm) en Arduino
           if (acumulador.includes("\n")) {
             let lineas = acumulador.split("\n");
             let ultimoDato = lineas[lineas.length - 2].trim(); 
@@ -187,6 +199,7 @@
     function actualizarPantalla(valor) {
       document.getElementById('pulsaciones').innerText = valor;
       
+      // Animación de latido en el corazón
       const corazon = document.getElementById('corazon');
       corazon.style.transform = 'scale(1.35)';
       setTimeout(() => { 
